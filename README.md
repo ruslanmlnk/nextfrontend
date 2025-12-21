@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me](http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
