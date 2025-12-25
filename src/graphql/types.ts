@@ -29,9 +29,13 @@ export interface PayloadColor {
   slug?: string | null;
   hex?: string | null;
 }
-
+export interface seoFields {
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+}
 export interface PayloadProduct {
   id?: PayloadID;
+  meta?: seoFields;
   slug?: string | null;
   name?: string | null;
   model?: string | null;

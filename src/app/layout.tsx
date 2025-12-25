@@ -31,6 +31,9 @@ export default async function RootLayout({
 
   return (
     <html lang="uk">
+      <head>
+        <link rel="icon" href="/favicon.svg" />
+      </head>
       <body className={`${rubik.variable} antialiased bg-white text-gray-900 font-sans`}>
         <Providers>
           <div className="min-h-screen bg-white flex flex-col font-sans">

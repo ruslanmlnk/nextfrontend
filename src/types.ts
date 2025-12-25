@@ -8,6 +8,10 @@ export interface Media {
 
 export interface Product {
   id: number | string; // Payload IDs are usually strings
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   slug?: string;
   name: string;
   model?: string;

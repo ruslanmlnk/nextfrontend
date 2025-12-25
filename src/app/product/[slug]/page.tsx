@@ -6,6 +6,16 @@ interface ProductPageProps {
   params: { slug: string } | Promise<{ slug: string }>;
 }
 
+export async function generateMetadata({ params }: ProductPageProps) {
+  const { slug } = await Promise.resolve(params);
+  const product = await fetchProductBySlugServer(slug);
+
+  return {
+    title: product?.meta?.metaTitle || "Product Details",
+    description: product?.meta?.metaDescription || "Get in touch with us",
+  };
+}
+
 export default async function ProductBySlug({ params }: ProductPageProps) {
   const { slug } = await Promise.resolve(params);
 
