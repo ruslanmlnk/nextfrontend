@@ -15,8 +15,8 @@ const resolvePayloadBaseUrl = (request: NextRequest) => {
 
   const fallback = normalizeBaseUrl('http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me')
 
-  if (fallback === requestOrigin && requestOrigin.includes('localhost:3000')) {
-    return { baseUrl: normalizeBaseUrl('http://localhost:3001'), requestOrigin, isExplicit: false }
+  if (fallback === requestOrigin && requestOrigin.includes('https://admin.ostrowtor.net')) {
+    return { baseUrl: normalizeBaseUrl('https://ostrowtor.net'), requestOrigin, isExplicit: false }
   }
 
   return { baseUrl: fallback, requestOrigin, isExplicit: false }
