@@ -13,7 +13,7 @@ const PAYLOAD_URL =
   process.env.NEXT_PUBLIC_PAYLOAD_URL ??
   process.env.NEXT_PUBLIC_CMS_URL ??
   process.env.PAYLOAD_URL ??
-  'http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me';
+  'https://admin.ostrowtor.net';
 
 function normalizeBaseUrl(value: string) {
   return value.replace(/\/+$/, '');

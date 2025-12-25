@@ -13,7 +13,7 @@ const resolvePayloadBaseUrl = (request: NextRequest) => {
     return { baseUrl: envBase, requestOrigin, isExplicit: true }
   }
 
-  const fallback = normalizeBaseUrl('http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me')
+  const fallback = normalizeBaseUrl('https://admin.ostrowtor.net')
 
   if (fallback === requestOrigin && requestOrigin.includes('https://admin.ostrowtor.net')) {
     return { baseUrl: normalizeBaseUrl('https://ostrowtor.net'), requestOrigin, isExplicit: false }
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          'PAYLOAD_URL вказано як URL фронтенду. Вкажіть URL Payload CMS (наприклад, http://ostriv-backend-pss7wq-99f886-46-175-148-52.traefik.me).',
+          'PAYLOAD_URL вказано як URL фронтенду. Вкажіть URL Payload CMS (наприклад, https://admin.ostrowtor.net).',
         payloadUrl: baseUrl,
       },
       { status: 500 },
