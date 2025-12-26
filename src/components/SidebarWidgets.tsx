@@ -1,8 +1,11 @@
-'use client';
 
 import React from 'react';
 import { Star } from 'lucide-react';
 import UiImage from './UiImage';
+import { fetchProducts } from '@/graphql/fetchers/products';
+import { getImageUrl } from '@/api';
+import Link from 'next/link';
+
 
 const POPULAR_ITEMS = [
   {
@@ -40,7 +43,10 @@ const POPULAR_ITEMS = [
   },
 ];
 
-const SidebarWidgets: React.FC = () => {
+const SidebarWidgets: React.FC = async () => {
+
+  const products = await fetchProducts();
+
   return (
     <div className="flex flex-col gap-6">
       {/* Popular Products Widget */}
@@ -51,14 +57,15 @@ const SidebarWidgets: React.FC = () => {
           </h3>
         </div>
         <div className="p-4 flex flex-col gap-4">
-          {POPULAR_ITEMS.map((item) => (
-            <div
+          {products.slice(0, 4).map((item) => (
+            <Link
+              href={ item.slug ? `/product/${item.slug}` : `/product/${item.id}`}
               key={item.id}
               className="flex gap-4 border-b border-gray-50 last:border-0 pb-4 last:pb-0"
             >
               <div className="w-16 h-16 flex-shrink-0 border border-gray-100 p-1 flex items-center justify-center">
                 <UiImage
-                  src={item.image}
+                  src={getImageUrl(item.image) || ''}
                   alt={item.name}
                   className="max-w-full max-h-full object-contain"
                   width={100}
@@ -93,7 +100,7 @@ const SidebarWidgets: React.FC = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -102,7 +109,7 @@ const SidebarWidgets: React.FC = () => {
       <div className="w-full bg-[#F5F5F5] rounded-lg overflow-hidden border border-gray-100">
         <div className="w-full h-[240px] relative">
           <UiImage
-            src="https://images.unsplash.com/photo-1528716321680-815a8cdb8cbe?q=80&w=800&auto=format&fit=crop"
+            src="/img/consultation.png"
             alt="Consultation"
             className="w-full h-full object-cover object-top"
             width={800}
