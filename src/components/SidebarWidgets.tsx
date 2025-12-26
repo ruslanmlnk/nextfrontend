@@ -7,7 +7,7 @@ import { getImageUrl } from '@/api';
 import Link from 'next/link';
 import { Product } from '@/types';
 
-const SidebarWidgets: React.FC<Product[]> = ( products )  => {
+const SidebarWidgets: React.FC<{ products?: Product[] | undefined }> = ({ products })  => {
 
 
   return (
@@ -20,7 +20,7 @@ const SidebarWidgets: React.FC<Product[]> = ( products )  => {
           </h3>
         </div>
         <div className="p-4 flex flex-col gap-4">
-          {products.slice(0, 4).map((item) => (
+          {products?.slice(0, 4).map((item) => (
             <Link
               href={ item.slug ? `/product/${item.slug}` : `/product/${item.id}`}
               key={item.id}

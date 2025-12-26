@@ -14,7 +14,7 @@ import { api, getImageUrl } from '../api';
 
 interface ProductPageProps {
   product: Product;
-  products?: Product[];
+  products?: Product[] | undefined;
 }
 
 const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
