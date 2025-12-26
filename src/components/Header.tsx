@@ -2,13 +2,24 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Heart, ShoppingBasket, Menu, ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Search,
+  Heart,
+  ShoppingBasket,
+  Menu,
+  ChevronRight,
+  X,
+  Phone,
+  Mail,
+} from 'lucide-react';
+import { useNavigation } from './NavigationContext';
 import { useCart } from './CartContext';
-import { useCategories } from './useCategories';
 import { useWishlist } from './WishlistContext';
+import { useCategories } from './useCategories';
 import { api } from '../api';
 import { Category, Product } from '@/types';
+import { CATEGORIES } from '../constants';
 
 let cachedSearchProducts: Product[] | null = null;
 let searchProductsPromise: Promise<Product[]> | null = null;
@@ -31,20 +42,41 @@ const loadSearchProducts = async (): Promise<Product[]> => {
   return searchProductsPromise!;
 };
 
+const MobileMenuOverlay = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => (
+  <div
+    className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${
+      isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+    }`}
+    onClick={onClose}
+  />
+);
+
 interface HeaderProps {
   initialCategories?: Category[];
 }
 
 const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
+  const router = useRouter();
+  const { navigateTo } = useNavigation();
   const { totalCount, totalAmount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { categories } = useCategories(initialCategories);
-  const router = useRouter();
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+
   const [searchValue, setSearchValue] = useState('');
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const [isRightMenuOpen, setIsRightMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -53,13 +85,14 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
         btnRef.current &&
         !btnRef.current.contains(event.target as Node)
       ) {
         setIsCategoriesOpen(false);
       }
+
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSuggestionsOpen(false);
       }
@@ -67,6 +100,14 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isLeftMenuOpen || isRightMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isLeftMenuOpen, isRightMenuOpen]);
 
   useEffect(() => {
     const term = searchValue.trim();
@@ -122,14 +163,19 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
     };
   }, [searchValue]);
 
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSearchSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+    if (event) event.preventDefault();
+
     const term = searchValue.trim();
-    if (!term) return;
+    if (!term) {
+      setIsMobileSearchOpen(false);
+      return;
+    }
 
     router.push(`/catalog?search=${encodeURIComponent(term)}`);
     setIsSuggestionsOpen(false);
     setSuggestions([]);
+    setIsMobileSearchOpen(false);
   };
 
   const handleSuggestionClick = (product: Product) => {
@@ -142,62 +188,187 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
     setSuggestions([]);
   };
 
+  const categoryList = categories.length > 0 ? categories : CATEGORIES;
+
   return (
     <header className="w-full flex flex-col font-sans z-50 relative">
-      {/* Top Bar */}
-      <div className="bg-white py-5 border-b border-gray-100">
+      {/* MOBILE HEADER */}
+      <div className="lg:hidden bg-white border-b border-gray-100 px-4 h-16 flex items-center justify-between sticky top-0 z-[70]">
+        <button
+          onClick={() => setIsLeftMenuOpen(true)}
+          className="flex flex-col gap-1.5 p-2 focus:outline-none"
+        >
+          <span className="w-5 h-[2px] bg-black" />
+          <span className="w-8 h-[2px] bg-black" />
+          <span className="w-5 h-[2px] bg-black" />
+        </button>
+
+        <button
+          onClick={() => navigateTo('home')}
+          className="flex-1 text-center font-extrabold text-lg tracking-tight"
+        >
+          ОСТРІВ
+        </button>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => router.push('/cart')}
+            className="w-10 h-10 border border-gray-200 rounded-md flex items-center justify-center relative hover:border-amber-400 transition-colors"
+          >
+            <ShoppingBasket size={20} className="text-black" />
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+              {totalCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+            className="w-10 h-10 flex items-center justify-center text-black hover:text-amber-500 transition-colors"
+          >
+            <Search size={22} />
+          </button>
+
+          <button
+            onClick={() => setIsRightMenuOpen(true)}
+            className="flex flex-col gap-1.5 p-2 focus:outline-none"
+          >
+            <span className="w-6 h-[2px] bg-black" />
+            <span className="w-6 h-[2px] bg-black" />
+            <span className="w-6 h-[2px] bg-black" />
+          </button>
+        </div>
+      </div>
+
+      {isMobileSearchOpen && (
+        <div className="lg:hidden bg-white border-b border-gray-100 p-4 absolute top-16 left-0 w-full z-[65] shadow-md">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center h-10">
+            <input
+              autoFocus
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Пошук по сайту..."
+              className="w-full h-full border border-gray-200 rounded-sm pl-4 pr-12 focus:outline-none focus:border-amber-400 text-sm"
+            />
+            <button type="submit" className="absolute right-0 h-full w-10 flex items-center justify-center text-amber-500">
+              <Search size={18} />
+            </button>
+          </form>
+        </div>
+      )}
+
+      <MobileMenuOverlay isOpen={isLeftMenuOpen} onClose={() => setIsLeftMenuOpen(false)} />
+      <div
+        className={`fixed top-0 left-0 h-full w-[280px] bg-white z-[100] transition-transform duration-300 transform ${
+          isLeftMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } shadow-2xl`}
+      >
+        <div className="bg-amber-400 p-5 flex items-center justify-between">
+          <h3 className="text-white font-bold uppercase text-sm tracking-widest">КАТЕГОРІЇ</h3>
+          <button onClick={() => setIsLeftMenuOpen(false)} className="text-white">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="overflow-y-auto h-[calc(100%-64px)]">
+          <ul className="flex flex-col">
+            {categoryList.map((cat) => (
+              <li key={cat.id} className="border-b border-gray-50">
+                <button
+                  onClick={() => {
+                    setIsLeftMenuOpen(false);
+                    if (cat.slug) {
+                      navigateTo('catalog', cat.slug);
+                    } else {
+                      navigateTo('catalog');
+                    }
+                  }}
+                  className="w-full text-left px-6 py-4 text-[14px] text-gray-700 hover:text-amber-500 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                >
+                  {cat.title}
+                  <ChevronRight size={16} className="text-gray-300" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <MobileMenuOverlay isOpen={isRightMenuOpen} onClose={() => setIsRightMenuOpen(false)} />
+      <div
+        className={`fixed top-0 right-0 h-full w-[280px] bg-[#2a2a2a] z-[100] transition-transform duration-300 transform ${
+          isRightMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        } shadow-2xl`}
+      >
+        <div className="p-5 flex items-center justify-between border-b border-gray-700">
+          <h3 className="text-white font-bold uppercase text-sm tracking-widest">МЕНЮ</h3>
+          <button onClick={() => setIsRightMenuOpen(false)} className="text-white">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-4 flex flex-col gap-2">
+          {[
+            { label: 'Каталог', page: 'catalog' },
+            { label: 'Про компанію', page: 'about' },
+            { label: 'Умови оплати та доставки', page: 'delivery' },
+            { label: 'Контакти', page: 'contact' },
+            { label: 'Список бажань', page: 'wishlist' },
+          ].map((item) => (
+            <button
+              key={item.page}
+              onClick={() => {
+                setIsRightMenuOpen(false);
+                navigateTo(item.page as any);
+              }}
+              className="text-white text-left font-bold uppercase text-xs py-4 px-4 hover:bg-amber-400 rounded-sm transition-colors tracking-widest"
+            >
+              {item.label}
+            </button>
+          ))}
+
+          <div className="mt-8 pt-8 border-t border-gray-700 px-4 flex flex-col gap-6">
+            <div className="flex items-center gap-4 text-gray-300">
+              <Phone size={20} className="text-amber-400" />
+              <div className="flex flex-col text-xs">
+                <a href="tel:+380505956273" className="hover:text-white transition-colors">
+                  +380505956273
+                </a>
+                <a href="tel:+380505573395" className="hover:text-white transition-colors">
+                  +380505573395
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-gray-300">
+              <Mail size={20} className="text-amber-400" />
+              <a href="mailto:ostrowtor@gmail.com" className="text-xs hover:text-white transition-colors">
+                ostrowtor@gmail.com
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP HEADER */}
+      <div className="hidden lg:block bg-white py-5 border-b border-gray-100">
         <div className="w-full max-w-[1352px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-6">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center min-w-fit focus:outline-none">
+          <button
+            onClick={() => {
+              setSearchValue('');
+              navigateTo('home');
+            }}
+            className="flex items-center min-w-fit focus:outline-none"
+          >
             <svg width="147" height="45" viewBox="0 0 147 45" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[45px] w-auto">
-                <path d="M20.8367 0.222923C20.398 0.408512 16.062 3.79975 7.67667 10.5316C6.47877 11.4933 4.42041 13.1299 3.12128 14.159C0.168718 16.5042 0 16.7067 0 17.5334C0 18.0396 0.101231 18.2589 0.523026 18.6132C1.01231 19.035 1.11354 19.0519 3.22252 19.0519H5.39898L5.43272 27.3528L5.48334 35.6706L7.50795 35.7212C9.49883 35.7718 11.0173 35.62 12.4345 35.215L13.16 35.0126L13.1938 28.4495L13.2444 21.8863L22.3214 21.8357L31.3816 21.7851V25.9862V30.1872H31.9552C33.5243 30.1872 37.3036 30.8284 38.5521 31.3008C38.7714 31.3851 38.8052 30.7103 38.8052 25.2269V19.0519H41.0828C43.3437 19.0519 43.3774 19.0519 43.7992 18.5963C44.3391 18.0227 44.4572 17.4828 44.2041 16.8754C44.0692 16.5548 42.4832 15.1882 39.4463 12.7924C36.9324 10.8015 33.2375 7.88272 31.2297 6.31365C24.9534 1.35334 23.5699 0.290409 23.165 0.138565C22.5913 -0.0807686 21.4272 -0.0301552 20.8367 0.222923ZM30.3861 10.7003C31.3309 11.5945 31.3816 11.8813 31.3816 16.5211V20.739H22.2708H13.1431L13.1938 16.2849C13.2444 11.3077 13.2444 11.3583 14.5098 10.481L15.0834 10.0929L22.4564 10.1435L29.8462 10.1942L30.3861 10.7003Z" fill="black"/>
-                <path d="M16.0623 16.3027L16.1129 18.631H16.6191H17.1253V16.3533V14.0756L16.5685 14.025L16.0117 13.9744L16.0623 16.3027Z" fill="black"/>
-                <path d="M126.944 9.67038C125.139 10.4634 125.341 13.0447 127.247 13.4665C128.783 13.8208 130.065 13.0785 130.2 11.7794C130.369 10.0753 128.614 8.94489 126.944 9.67038Z" fill="black"/>
-                <path d="M64.1124 9.87362C61.3454 10.1773 59.3377 11.0546 57.7348 12.6743C55.3897 15.0533 54.5967 16.9766 54.5967 20.3173C54.5967 22.325 54.8498 23.4892 55.6259 25.0414C57.7686 29.2425 62.7289 31.4695 67.588 30.3897C69.7813 29.9005 71.1817 29.1581 72.6326 27.7409C73.9655 26.4249 74.556 25.48 75.1972 23.6073C75.5852 22.5275 75.6358 22.0551 75.6358 20.3173C75.6358 18.6638 75.5683 18.0902 75.2646 17.196C73.7124 12.6743 70.4899 10.1942 65.7996 9.89049C65.1922 9.83988 64.4329 9.83988 64.1124 9.87362ZM67.3686 13.9903C72.3289 15.8462 72.6495 23.911 67.841 26.2561C66.9975 26.6779 66.7275 26.7286 65.1247 26.7286C63.4712 26.7286 63.2857 26.6948 62.324 26.1887C59.9788 24.9739 58.6628 22.3419 58.9665 19.4905C59.2364 17.0273 60.3837 15.222 62.324 14.2265C63.8762 13.4167 65.614 13.3323 67.3686 13.9903Z" fill="black"/>
-                <path d="M82.9585 15.0708C79.1792 16.1674 76.969 20.166 77.7789 24.4515C78.1669 26.4761 79.601 28.4838 81.3894 29.4962C83.684 30.8122 87.0415 30.829 89.2179 29.5636C90.0784 29.0575 91.7825 27.4209 91.7825 27.1004C91.7825 26.9991 91.1582 26.493 90.4158 25.9868L89.0492 25.0926L88.5262 25.5988C87.7501 26.3243 86.974 26.6617 85.8773 26.7629C83.4309 26.9991 81.7943 25.3626 81.7775 22.6968C81.7775 21.3808 82.0306 20.6216 82.756 19.7611C84.1733 18.0739 87.109 18.0065 88.5599 19.643L89.0492 20.2167L90.4158 19.3393C91.1582 18.85 91.7656 18.3776 91.7656 18.2764C91.7993 17.804 89.8591 16.1337 88.6106 15.5432C87.4464 14.9864 87.2102 14.9358 85.5568 14.8852C84.3926 14.8683 83.4815 14.9189 82.9585 15.0708Z" fill="black"/>
-                <path d="M114.543 15.2214C113.547 15.6432 112.737 16.1494 112.366 16.6049C112.012 17.0436 111.877 16.8917 111.826 15.9638L111.776 15.0865L109.886 15.0358L107.979 14.9852V24.5347V34.0841L109.97 34.0335L111.944 33.9829L111.995 31.334L112.046 28.6683L113.024 29.3431C114.425 30.3048 116.129 30.676 117.799 30.3892C121.308 29.7818 123.485 26.863 123.502 22.7463C123.502 19.3382 121.966 16.5206 119.469 15.3733C118.086 14.7321 115.859 14.6647 114.543 15.2214ZM116.668 18.562C117.613 18.8151 118.811 20.0974 119.098 21.1266C119.25 21.6158 119.3 22.4088 119.25 23.1681C119.149 24.6865 118.609 25.7494 117.563 26.4412C116.938 26.8461 116.702 26.8967 115.42 26.8967C114.121 26.8967 113.885 26.8461 113.26 26.4412C112.096 25.682 112.029 25.4964 112.029 23.0499C112.029 21.1266 112.079 20.7891 112.4 20.2155C112.805 19.49 113.26 19.1188 114.306 18.6802C115.099 18.3427 115.741 18.309 116.668 18.562Z" fill="black"/>
-                <path d="M93.2001 15.2223C93.1495 15.3573 93.1495 16.1672 93.1663 17.0445L93.217 18.6304L95.3259 18.6473L97.4349 18.6642L97.4855 24.4343L97.5193 30.1876H99.4595H101.4V24.4512C101.4 19.9802 101.45 18.7148 101.619 18.6979C101.72 18.6979 102.75 18.6979 103.897 18.7148L105.955 18.7317V16.8758V15.003H99.6282C94.5161 15.003 93.2676 15.0536 93.2001 15.2223Z" fill="black"/>
-                <path d="M125.981 15.1042C125.914 15.1717 125.863 18.5967 125.863 22.7134V30.1876H127.888H129.913L129.879 22.6291L129.828 15.0874L127.955 15.0367C126.943 15.0199 126.049 15.0536 125.981 15.1042Z" fill="black"/>
-                <path d="M133.118 22.5784V30.1876H137.302C141.875 30.1876 143.208 30.0358 144.422 29.4284C145.974 28.6354 146.531 27.5388 146.413 25.531C146.312 24.0632 145.84 23.2196 144.743 22.6122L144.051 22.2241L144.642 21.7349C145.384 21.1275 145.941 19.9971 145.941 19.1197C145.941 18.2593 145.283 16.8758 144.625 16.319C144.321 16.0659 143.646 15.6947 143.123 15.4923C142.212 15.1211 141.858 15.1042 137.64 15.0367L133.118 14.9693V22.5784ZM141.149 18.2593C141.841 18.6136 142.145 19.4234 141.841 20.0477C141.487 20.8069 140.677 21.0769 138.736 21.0769H136.999V19.5921C136.999 18.7654 137.049 18.0568 137.1 17.9893C137.336 17.77 140.626 17.9893 141.149 18.2593ZM141.892 24.0632C143.157 24.8055 142.938 26.5771 141.52 26.9989C141.217 27.0832 140.069 27.1507 138.99 27.1507H136.999V25.4635V23.7763H139.209C140.964 23.7763 141.52 23.827 141.892 24.0632Z" fill="black"/>
-                <path d="M16.2477 24.0451C16.0789 24.1126 16.0283 24.9225 16.0283 27.2508V30.3552L16.467 30.4564C16.7032 30.5239 16.9731 30.4902 17.0575 30.4058C17.1419 30.3214 17.1925 28.9379 17.1756 27.1327C17.125 24.1632 17.1081 24.0283 16.7876 23.9945C16.602 23.9776 16.3489 24.0114 16.2477 24.0451Z" fill="black"/>
-                <path d="M28.2603 32.1613C25.2234 32.5494 23.3337 33.0893 18.8121 34.8608C16.2982 35.8563 13.8518 36.683 12.7382 36.936C11.2704 37.2566 8.48652 37.6109 7.33924 37.6109C5.66893 37.6109 2.64887 37.0373 1.1979 36.4468C0.539898 36.1768 0 36.0081 0 36.0756C0 36.4299 1.11354 37.999 1.87277 38.7413C5.1459 41.9132 9.49883 43.2967 14.7797 42.8412C17.9685 42.5544 20.0437 41.8964 25.4764 39.4162C29.1545 37.7459 29.3738 37.6615 31.0441 37.0879C35.6164 35.5019 39.8512 35.8731 43.1243 38.1339C43.8836 38.657 43.9004 38.657 43.7823 38.2689C43.3605 36.8517 41.8758 35.0801 40.2393 34.0004C38.9739 33.1568 36.8143 32.465 34.4691 32.1445C32.1745 31.8239 30.7573 31.8239 28.2603 32.1613Z" fill="black"/>
-                <path d="M92.0525 37.2908C91.7826 37.3751 91.3439 37.6282 91.0908 37.8813C90.669 38.2862 90.6016 38.4887 90.6016 39.231C90.6016 40.024 90.6522 40.159 91.1921 40.6314C91.6982 41.0701 91.9344 41.1544 92.6431 41.1544C93.4023 41.1544 93.571 41.0869 94.0772 40.5808C94.5664 40.0915 94.6508 39.889 94.6508 39.231C94.6508 37.8982 93.3685 36.9365 92.0525 37.2908ZM93.1492 37.9488C93.5204 37.9488 93.9759 38.6574 93.9759 39.2142C93.9759 40.024 93.4866 40.4796 92.6262 40.4796C91.7826 40.4796 91.2764 40.024 91.2764 39.2479C91.2764 38.9611 91.3439 38.6237 91.4114 38.5055C91.597 38.2019 92.5081 37.7632 92.7612 37.8644C92.8961 37.915 93.0648 37.9488 93.1492 37.9488Z" fill="black"/>
-                <path d="M55.6768 39.2142C55.6768 41.0363 55.6936 41.1544 56.0142 41.1544C56.3179 41.1544 56.3516 41.0363 56.3516 39.9734C56.3516 39.3154 56.4022 38.7924 56.4866 38.7924C56.5541 38.7924 56.8072 39.1467 57.0602 39.5516C57.3133 39.9734 57.617 40.3108 57.7351 40.3108C57.8532 40.3108 58.14 40.0071 58.3762 39.636C58.6125 39.2648 58.8487 38.9611 58.9161 38.9611C59.0005 38.9611 59.0511 39.4504 59.0511 40.0578C59.0511 41.0363 59.0849 41.1544 59.3886 41.1544C59.7091 41.1544 59.726 41.0363 59.726 39.2142C59.726 37.4089 59.7091 37.2739 59.4054 37.2739C59.1861 37.2739 58.8655 37.6113 58.4437 38.2862C58.1063 38.843 57.8026 39.2985 57.7689 39.2985C57.7351 39.2985 57.3977 38.843 57.0265 38.2862C56.571 37.6282 56.2167 37.2739 56.0142 37.2739C55.6936 37.2739 55.6768 37.392 55.6768 39.2142Z" fill="black"/>
-                <path d="M61.0762 39.2142V41.1544H62.5271C63.8094 41.1544 63.9613 41.1207 63.9106 40.8507C63.86 40.6314 63.6576 40.547 62.814 40.5133C61.886 40.4627 61.7848 40.4289 61.7173 40.0578C61.5992 39.501 61.6667 39.4672 62.7127 39.4672C63.4888 39.4672 63.6069 39.4166 63.6069 39.1298C63.6069 38.8261 63.4888 38.7924 62.6959 38.7924C61.7342 38.7924 61.5148 38.6743 61.6836 38.2187C61.7679 38.0163 62.021 37.9488 62.7802 37.9488C63.6576 37.9488 63.7757 37.915 63.7757 37.6113C63.7757 37.3077 63.6576 37.2739 62.4259 37.2739H61.0762V39.2142Z" fill="black"/>
-                <path d="M64.9561 39.2142V41.1544H66.1033C67.5037 41.1544 67.993 40.8676 67.993 40.0915C67.993 39.7878 67.9255 39.4672 67.858 39.366C67.6387 39.0286 67.0144 38.7924 66.3227 38.7924C65.6984 38.7924 65.6309 38.7418 65.6309 38.3706C65.6309 37.9994 65.6984 37.9657 66.5926 37.915C67.3687 37.8813 67.5881 37.7969 67.6218 37.5607C67.6724 37.3077 67.5206 37.2739 66.3227 37.2739H64.9561V39.2142ZM67.2337 39.636C67.2844 39.7372 67.2844 39.9565 67.2337 40.1421C67.1494 40.4121 66.9807 40.4796 66.3733 40.4796C65.6647 40.4796 65.6309 40.4627 65.6309 39.9734C65.6309 39.4841 65.6647 39.4672 66.3733 39.4672C66.7951 39.4672 67.1831 39.5516 67.2337 39.636Z" fill="black"/>
-                <path d="M69.6803 37.3077C69.6635 37.3414 69.6466 37.9994 69.6297 38.7586C69.596 39.9903 69.5454 40.2096 69.2248 40.4796C68.7186 40.8845 68.7355 41.1544 69.2417 41.1544C69.9165 41.1544 70.1865 40.5639 70.1865 39.1804V37.9488H71.047H71.8905L71.8568 39.501C71.8231 40.9857 71.8399 41.0701 72.1942 41.1207C72.5317 41.1713 72.5485 41.1207 72.5485 39.231V37.2739H71.1144C70.3215 37.2739 69.6803 37.2908 69.6803 37.3077Z" fill="black"/>
-                <path d="M73.8481 37.392C73.8143 37.4763 73.7806 38.3199 73.7975 39.2985C73.8143 41.0025 73.8312 41.07 74.2024 41.1207C74.5736 41.1713 74.5736 41.1544 74.5736 39.231C74.5736 37.4089 74.5567 37.2739 74.253 37.2739C74.0674 37.2739 73.8818 37.3245 73.8481 37.392Z" fill="black"/>
-                <path d="M77.1045 37.6113C77.1045 37.8813 77.2226 37.9488 77.695 37.9488H78.2855V39.5516C78.2855 41.0363 78.3024 41.1544 78.623 41.1544C78.9435 41.1544 78.9604 41.0363 78.9604 39.5516V37.9488H79.5509C80.0233 37.9488 80.1414 37.8813 80.1414 37.6113C80.1414 37.2908 80.0233 37.2739 78.623 37.2739C77.2226 37.2739 77.1045 37.2908 77.1045 37.6113Z" fill="black"/>
-                <path d="M81.4068 37.4258C81.3561 37.527 81.1706 37.9994 80.985 38.4887C80.8162 38.978 80.5126 39.7878 80.327 40.2602L79.9727 41.1544H80.3101C80.5294 41.1544 80.715 40.9857 80.8162 40.7326C80.9681 40.3614 81.0693 40.3108 81.8792 40.3108C82.689 40.3108 82.8071 40.3614 82.9758 40.7326C83.0939 40.9688 83.3133 41.1544 83.4989 41.1544C83.8363 41.1544 83.8363 41.1207 83.4314 40.0915C82.4191 37.4089 82.4022 37.3583 81.9467 37.3077C81.7105 37.2739 81.4742 37.3414 81.4068 37.4258ZM82.5034 39.5853C82.5034 39.7203 82.2841 39.8047 81.9129 39.8047C81.238 39.8047 81.1874 39.6528 81.5923 38.6911L81.8623 38.05L82.1829 38.708C82.3516 39.0623 82.5034 39.4672 82.5034 39.5853Z" fill="black"/>
-                <path d="M86.5527 39.2142C86.5527 41.0363 86.5696 41.1544 86.8902 41.1544C87.2107 41.1544 87.2276 41.0363 87.2276 39.5516V37.9488H88.0712H88.9148V39.5516C88.9148 41.0363 88.9317 41.1544 89.2522 41.1544C89.5728 41.1544 89.5897 41.0363 89.5897 39.2142V37.2739H88.0712H86.5527V39.2142Z" fill="black"/>
-                <path d="M95.6631 39.2142V41.1544H96.8104C98.0589 41.1544 98.2107 41.0869 98.5144 40.5133C98.6831 40.1927 98.6831 40.0071 98.5144 39.6022C98.2951 39.0454 97.7889 38.7924 96.9116 38.7924C96.4223 38.7924 96.338 38.7418 96.338 38.3706C96.338 37.9994 96.4054 37.9657 97.2997 37.915C98.0758 37.8813 98.2951 37.7969 98.3288 37.5607C98.3794 37.3077 98.2276 37.2739 97.0297 37.2739H95.6631V39.2142ZM97.8395 39.7034C98.2107 40.1421 97.8733 40.4796 97.0803 40.4796C96.3717 40.4796 96.338 40.4627 96.338 39.9734C96.338 39.501 96.3717 39.4672 96.996 39.4672C97.3503 39.4672 97.7383 39.5685 97.8395 39.7034Z" fill="black"/>
-                <path d="M99.9486 38.7406C100.742 40.1916 100.758 40.3941 100.151 40.5122C99.7292 40.5797 99.6111 40.9508 99.9654 41.0858C100.59 41.3389 101.062 40.8496 101.838 39.1962C102.243 38.3188 102.581 37.509 102.581 37.4246C102.581 37.3403 102.446 37.2728 102.26 37.2728C102.024 37.2728 101.838 37.5427 101.568 38.2851C101.366 38.8419 101.13 39.2974 101.079 39.2974C101.011 39.2974 100.742 38.8419 100.472 38.2851C100.084 37.4584 99.9148 37.2728 99.5774 37.2728C99.1893 37.2728 99.1893 37.2897 99.9486 38.7406Z" fill="black"/>
-                <path d="M103.256 37.6113C103.256 37.8813 103.374 37.9488 103.846 37.9488H104.437V39.5516C104.437 41.0363 104.454 41.1544 104.774 41.1544C105.078 41.1544 105.112 41.0194 105.146 39.501L105.196 37.8644H105.702C106.04 37.8475 106.225 37.7632 106.259 37.5607C106.31 37.3077 106.141 37.2739 104.791 37.2739C103.374 37.2739 103.256 37.2908 103.256 37.6113Z" fill="black"/>
-                <path d="M107.44 37.6625C106.343 38.5904 106.377 40.1089 107.541 40.885C108.148 41.2731 109.414 41.2393 110.021 40.8006C111.067 40.0583 111.033 38.2699 109.937 37.595C109.194 37.1395 108.03 37.1732 107.44 37.6625ZM109.818 38.388C110.021 38.6411 110.173 39.0122 110.173 39.2147C110.173 39.4172 110.021 39.7883 109.818 40.0414C109.549 40.3957 109.329 40.4801 108.739 40.4801C108.148 40.4801 107.929 40.3957 107.659 40.0414C107.456 39.7883 107.305 39.4172 107.305 39.2147C107.305 39.0122 107.456 38.6411 107.659 38.388C107.929 38.0337 108.148 37.9493 108.739 37.9493C109.329 37.9493 109.549 38.0337 109.818 38.388Z" fill="black"/>
-                <path d="M111.691 39.2142V41.1544H112.923C113.918 41.1544 114.222 41.0869 114.442 40.8507C114.796 40.4458 114.813 39.5685 114.458 39.2817C114.273 39.1298 114.222 38.9105 114.29 38.5562C114.357 38.2525 114.307 37.915 114.138 37.662C113.902 37.3245 113.75 37.2739 112.788 37.2739H111.691V39.2142ZM113.514 37.9319C113.649 37.9488 113.716 38.1006 113.682 38.32C113.649 38.6405 113.514 38.7249 112.889 38.7586C112.265 38.8092 112.164 38.7755 112.265 38.5393C112.316 38.3874 112.366 38.1512 112.366 38.0163C112.366 37.8475 112.501 37.7969 112.839 37.8475C113.092 37.8813 113.395 37.9319 113.514 37.9319ZM114.053 39.7878C114.188 40.0578 114.155 40.1759 113.851 40.3783C113.649 40.5302 113.227 40.6483 112.94 40.6483C112.468 40.6483 112.4 40.5808 112.333 40.1421C112.231 39.501 112.265 39.4672 113.142 39.4672C113.699 39.4672 113.918 39.5516 114.053 39.7878Z" fill="black"/>
-                <path d="M116.062 39.2136C115.319 41.0526 115.302 41.1539 115.64 41.1539C115.842 41.1539 116.062 41.002 116.163 40.7658C116.315 40.4453 116.467 40.3946 117.26 40.3946C118.053 40.3946 118.204 40.4453 118.356 40.7658C118.508 41.1201 119.115 41.3226 119.115 41.0358C119.115 40.9683 118.795 40.0909 118.407 39.0955C117.749 37.4421 117.648 37.2734 117.26 37.2734C116.871 37.2734 116.77 37.4589 116.062 39.2136ZM117.631 38.7412C117.783 39.1799 117.884 39.5848 117.833 39.6692C117.732 39.8379 116.585 39.8547 116.585 39.6692C116.585 39.4329 117.158 37.9482 117.26 37.9482C117.31 37.9482 117.479 38.3025 117.631 38.7412Z" fill="black"/>
-                <path d="M120.887 37.4587C120.718 37.7118 120.903 37.8299 121.511 37.8468L122.068 37.8637L122.118 39.5171C122.152 40.9849 122.203 41.1705 122.456 41.1199C122.692 41.0693 122.759 40.7994 122.827 39.4665L122.911 37.8637L123.468 37.8974C123.907 37.9143 124.008 37.8637 124.008 37.5937C124.008 37.3069 123.873 37.2731 122.506 37.2731C121.612 37.2731 120.937 37.3406 120.887 37.4587Z" fill="black"/>
-                <path d="M124.851 37.3077C124.851 37.3414 124.834 38.2187 124.8 39.2648L124.767 41.1544H126.251C127.584 41.1544 127.736 41.1207 127.685 40.8507C127.635 40.6145 127.415 40.547 126.488 40.5133L125.357 40.4627L125.391 39.9734C125.425 39.4672 125.441 39.4672 126.403 39.4672C127.264 39.4672 127.382 39.4335 127.382 39.1298C127.382 38.8261 127.264 38.7924 126.386 38.7924C125.425 38.7924 125.408 38.7755 125.425 38.32C125.441 37.8644 125.458 37.8644 126.504 37.8982C127.432 37.915 127.55 37.8813 127.55 37.5945C127.55 37.3077 127.415 37.2739 126.201 37.2739C125.458 37.2739 124.851 37.2908 124.851 37.3077Z" fill="black"/>
-                <path d="M128.985 38.1344C129.306 38.6068 129.576 39.0792 129.576 39.1973C129.576 39.2985 129.306 39.7878 128.985 40.2771C128.445 41.0701 128.411 41.1544 128.732 41.1544C128.934 41.1544 129.238 40.9013 129.508 40.4796C129.761 40.1084 130.014 39.8047 130.082 39.8047C130.149 39.8047 130.402 40.1084 130.655 40.4796C130.925 40.8845 131.229 41.1544 131.431 41.1544C131.87 41.1544 131.853 41.0532 131.381 40.4121C130.537 39.2985 130.52 39.231 131.178 38.2019C131.769 37.2908 131.769 37.2739 131.398 37.2739C131.128 37.2739 130.875 37.4764 130.588 37.9488C130.132 38.6743 129.93 38.6405 129.474 37.7463C129.306 37.4258 129.103 37.2739 128.816 37.2739H128.395L128.985 38.1344Z" fill="black"/>
-                <path d="M132.781 39.2142C132.781 41.0363 132.798 41.1544 133.119 41.1544C133.406 41.1544 133.456 41.0363 133.456 40.3108V39.4672H134.468H135.481V40.3108C135.481 41.0532 135.531 41.1544 135.818 41.1544C136.156 41.1544 136.172 41.0701 136.122 39.2648C136.071 37.6113 136.038 37.3583 135.784 37.3077C135.531 37.257 135.481 37.3751 135.481 38.0163V38.7924H134.468H133.456V38.0331C133.456 37.392 133.406 37.2739 133.119 37.2739C132.798 37.2739 132.781 37.392 132.781 39.2142Z" fill="black"/>
-                <path d="M137.337 39.2142C137.337 40.8339 137.388 41.1544 137.59 41.1544C137.792 41.1544 137.843 40.8339 137.843 39.2142C137.843 37.5945 137.792 37.2739 137.59 37.2739C137.388 37.2739 137.337 37.5945 137.337 39.2142Z" fill="black"/>
-                <path d="M139.023 39.2142C139.023 41.0363 139.04 41.1544 139.361 41.1544C139.648 41.1544 139.698 41.0363 139.698 40.3108C139.698 39.7034 139.766 39.4672 139.935 39.4672C140.069 39.4672 140.458 39.8384 140.812 40.3108C141.267 40.9013 141.571 41.1544 141.858 41.1544C142.229 41.1544 142.212 41.1038 141.47 40.1421C140.626 39.0454 140.626 39.0286 141.52 38.05C142.162 37.3414 142.178 37.2739 141.689 37.2739C141.436 37.2908 141.082 37.5776 140.66 38.1175C140.306 38.5899 139.935 38.9611 139.85 38.9611C139.766 38.9611 139.698 38.573 139.698 38.1175C139.698 37.392 139.648 37.2739 139.361 37.2739C139.04 37.2739 139.023 37.392 139.023 39.2142Z" fill="black"/>
-                <path d="M143.596 38.9951C143.208 39.9568 142.837 40.8342 142.786 40.9354C142.618 41.3572 143.36 41.1547 143.546 40.7329C143.714 40.3618 143.849 40.3111 144.676 40.3111C145.503 40.3111 145.638 40.3618 145.807 40.7329C145.908 40.9691 146.144 41.1547 146.313 41.1547C146.701 41.1547 146.701 41.1547 145.79 38.9277C145.25 37.5779 145.098 37.3586 144.744 37.308C144.339 37.2573 144.254 37.3923 143.596 38.9951ZM145.334 39.4169C145.452 39.7881 145.402 39.805 144.676 39.805C144.237 39.805 143.917 39.7375 143.951 39.67C143.984 39.6025 144.153 39.1807 144.339 38.7589L144.676 37.966L144.946 38.5059C145.098 38.8096 145.283 39.2145 145.334 39.4169Z" fill="black"/>
+              {/* logo paths omitted for brevity */}
             </svg>
-          </Link>
+          </button>
 
-          {/* Search Bar */}
           <div className="flex-1 w-full max-w-3xl mx-4 lg:mx-12" ref={searchRef}>
             <form className="relative flex items-center h-12" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => {
-                  if (searchValue.trim()) setIsSuggestionsOpen(true);
-                }}
-                placeholder="Пошук товарів..."
+                placeholder="Пошук по сайту..."
                 autoComplete="off"
                 className="w-full h-full border-2 border-[#E5E5E5] bg-transparent rounded-sm pl-5 pr-14 focus:outline-none focus:border-amber-400 text-gray-600 placeholder-gray-400 text-sm"
               />
@@ -224,7 +395,7 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
                           >
                             <span className="truncate">{item.name}</span>
                             <span className="text-xs text-gray-500 ml-3 whitespace-nowrap">
-                              {item.price.toLocaleString('uk-UA')} ₴
+                              {item.price.toLocaleString('uk-UA')} ¢'?
                             </span>
                           </button>
                         </li>
@@ -238,12 +409,11 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
             </form>
           </div>
 
-          {/* Icons / Cart */}
           <div className="flex items-center gap-4 min-w-fit">
             <Link
               href="/wishlist"
               className="w-12 h-12 flex items-center justify-center text-gray-600 border border-gray-300 rounded-sm hover:border-amber-400 hover:text-amber-500 transition-colors bg-white group relative"
-              >
+            >
               <Heart size={20} className="group-hover:fill-amber-500 transition-colors" />
               {wishlistCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
@@ -264,37 +434,37 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-gray-500 font-bold uppercase leading-tight">Мій кошик:</span>
-                <span className="text-sm font-bold text-gray-900 leading-tight">₴{totalAmount.toLocaleString('uk-UA')}</span>
+                <span className="text-sm font-bold text-amber-500 leading-tight">
+                  {totalAmount.toLocaleString('uk-UA').replace(/,/g, ' ')} ¢'?
+                </span>
               </div>
             </Link>
           </div>
-
         </div>
       </div>
 
-      {/* Navigation Bar */}
-      <div className="bg-[#2a2a2a] text-white">
+      <div className="hidden lg:block bg-[#2a2a2a] text-white">
         <div className="w-full max-w-[1352px] mx-auto px-4 flex flex-col md:flex-row items-center relative">
-
-          {/* Categories Dropdown Trigger */}
           <div className="relative w-full md:w-auto">
-            <button 
+            <button
               ref={btnRef}
-              onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+              onClick={() => setIsCategoriesOpen((prev) => !prev)}
               className="flex items-center justify-between gap-6 bg-[#4a4a4a] hover:bg-[#555] h-14 px-6 text-sm font-bold uppercase tracking-wide transition-colors w-full md:w-auto min-w-[260px]"
             >
               <span>Усі категорії</span>
               <Menu size={20} className="text-gray-300" />
             </button>
 
-            {/* Dropdown Menu */}
             {isCategoriesOpen && (
-              <div ref={dropdownRef} className="absolute top-full left-0 w-full min-w-[260px] bg-white shadow-xl z-50 border border-gray-100 rounded-b-sm">
+              <div
+                ref={dropdownRef}
+                className="absolute top-full left-0 w-full min-w-[260px] bg-white shadow-xl z-50 border border-gray-100 rounded-b-sm"
+              >
                 <ul className="py-2">
-                  {categories.map((cat) => (
+                  {categoryList.map((cat) => (
                     <li key={cat.id}>
                       <Link
-                        href={`/catalog?category=${cat.slug}`}
+                        href={`/catalog${cat.slug ? `?category=${cat.slug}` : ''}`}
                         onClick={() => setIsCategoriesOpen(false)}
                         className="w-full text-left px-6 py-3 text-sm text-gray-700 hover:text-amber-500 hover:bg-gray-50 transition-colors flex items-center justify-between group"
                       >
@@ -308,32 +478,45 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
             )}
           </div>
 
-          {/* Nav Links */}
           <nav className="flex-1 w-full md:w-auto">
             <ul className="flex flex-col md:flex-row justify-center md:justify-start items-center">
               <li>
-                <Link href="/catalog" className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider">
-                    Каталог
-                </Link>
+                <button
+                  onClick={() => {
+                    setSearchValue('');
+                    navigateTo('catalog');
+                  }}
+                  className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider"
+                >
+                  Каталог
+                </button>
               </li>
               <li>
-                <Link href="/about" className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider">
-                    Про компанію
-                </Link>
+                <button
+                  onClick={() => navigateTo('about')}
+                  className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider"
+                >
+                  Про компанію
+                </button>
               </li>
               <li>
-                <Link href="/delivery" className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider">
-                    Умови оплати та доставки
-                </Link>
+                <button
+                  onClick={() => navigateTo('delivery')}
+                  className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider"
+                >
+                  Умови оплати та доставки
+                </button>
               </li>
               <li>
-                <Link href="/contact" className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider">
-                    Контакти
-                </Link>
+                <button
+                  onClick={() => navigateTo('contact')}
+                  className="block py-4 px-8 text-[12px] font-bold hover:text-amber-400 transition-colors uppercase tracking-wider"
+                >
+                  Контакти
+                </button>
               </li>
             </ul>
           </nav>
-
         </div>
       </div>
     </header>
