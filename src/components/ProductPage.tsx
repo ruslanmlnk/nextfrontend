@@ -17,7 +17,7 @@ interface ProductPageProps {
   products?: Product[];
 }
 
-const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
+const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -131,7 +131,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
         {/* Left Sidebar */}
         <aside className="w-full lg:w-[270px] flex-shrink-0 hidden lg:block">
           <SidebarCategories />
-          <SidebarWidgets />
+          <SidebarWidgets products={products} />
         </aside>
 
         {/* Main Content */}

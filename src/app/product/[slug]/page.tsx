@@ -1,6 +1,5 @@
 import ProductPage from "@/components/ProductPage";
-import { fetchProducts } from "@/graphql/fetchers/products";
-import { fetchProductBySlugServer } from "@/graphql/server/products";
+import { fetchProductBySlugServer, fetchProductsServer } from "@/graphql/server/products";
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {
@@ -25,7 +24,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
     return notFound();
   }
   const product = await fetchProductBySlugServer(slug);
-  const products = await fetchProducts();
+  const products = await fetchProductsServer('hit');
 
   if (!product) {
     return notFound();
