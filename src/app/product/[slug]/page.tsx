@@ -9,6 +9,7 @@ interface ProductPageProps {
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await Promise.resolve(params);
   const product = await fetchProductBySlugServer(slug);
+  console.log("Generating metadata for product:", product);
 
   return {
     title: product?.meta?.metaTitle || "Product Details",

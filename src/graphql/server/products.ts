@@ -74,6 +74,10 @@ const normalizeProduct = (
     id: item.id ?? item.slug ?? item.name ?? '',
     slug: item.slug ?? '',
     name: item.name ?? '',
+    meta: {
+      metaTitle: item.meta?.metaTitle ?? null,
+      metaDescription: item.meta?.metaDescription ?? null,
+    },
     model: item.model ?? undefined,
     brand: brandTitle,
     category: categorySlug,
