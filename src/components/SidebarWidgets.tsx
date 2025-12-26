@@ -5,47 +5,10 @@ import UiImage from './UiImage';
 import { fetchProducts } from '@/graphql/fetchers/products';
 import { getImageUrl } from '@/api';
 import Link from 'next/link';
+import { Product } from '@/types';
 
+const SidebarWidgets: React.FC<Product[]> = ( products )  => {
 
-const POPULAR_ITEMS = [
-  {
-    id: 1,
-    name: 'Холодильник Samsung RB34T600',
-    price: 85.0,
-    oldPrice: 98.0,
-    image:
-      'https://i.ibb.co/NdysLRCm/5f72290eb2e9285223eba7828a9153b2c9dcb3ed.png',
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: 'Стильний обідній стіл',
-    price: 132.0,
-    image:
-      'https://i.ibb.co/PzTgLXN5/b0a73fcaf0bca244f75fc86dacff35ce5ea766ec.png',
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: 'Холодильник Samsung RB34T600',
-    price: 98.0,
-    image:
-      'https://i.ibb.co/NdysLRCm/5f72290eb2e9285223eba7828a9153b2c9dcb3ed.png',
-    rating: 5,
-  },
-  {
-    id: 4,
-    name: 'Стильний обідній стіл',
-    price: 76.0,
-    image:
-      'https://i.ibb.co/PzTgLXN5/b0a73fcaf0bca244f75fc86dacff35ce5ea766ec.png',
-    rating: 5,
-  },
-];
-
-const SidebarWidgets: React.FC = async () => {
-
-  const products = await fetchProducts();
 
   return (
     <div className="flex flex-col gap-6">
