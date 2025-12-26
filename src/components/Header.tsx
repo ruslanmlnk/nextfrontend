@@ -247,7 +247,7 @@ const Header: React.FC<HeaderProps> = ({ initialCategories }) => {
             className="w-10 h-10 border border-gray-200 rounded-md flex items-center justify-center relative hover:border-amber-400 transition-colors"
           >
             <ShoppingBasket size={20} className="text-black" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+            <span className="absolute -top-2 -right-2 bg-amber-400 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
               {totalCount}
             </span>
           </button>
