@@ -8,6 +8,10 @@ export const GET_PRODUCTS = gql`
         slug
         name
         model
+        meta{
+          metaTitle
+          metaDescription
+        }
         brand {
           id
           title
