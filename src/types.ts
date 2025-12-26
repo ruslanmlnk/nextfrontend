@@ -35,6 +35,7 @@ export interface Category {
   title: string;
   image: string | Media;
   slug: string;
+  order?: number;
 }
 
 export interface Brand {

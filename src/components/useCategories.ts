@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Category } from '../types';
+import { sortCategoriesByOrder } from '@/utils/categories';
 
 let cachedCategories: Category[] | null = null;
 let categoriesPromise: Promise<Category[]> | null = null;
 
 const seedCache = (initial?: Category[]) => {
   if (initial && initial.length > 0 && (!cachedCategories || cachedCategories.length === 0)) {
-    cachedCategories = initial;
+    cachedCategories = sortCategoriesByOrder(initial);
   }
 };
 
@@ -34,7 +35,9 @@ const fetchCategories = async (): Promise<Category[]> => {
 
 export const useCategories = (initial?: Category[]) => {
   seedCache(initial);
-  const [categories, setCategories] = useState<Category[]>(initial || cachedCategories || []);
+  const [categories, setCategories] = useState<Category[]>(() =>
+    sortCategoriesByOrder(initial || cachedCategories || []),
+  );
   const [loading, setLoading] = useState(() => {
     if (initial && initial.length > 0) return false;
     return !cachedCategories || cachedCategories.length === 0;
@@ -48,7 +51,7 @@ export const useCategories = (initial?: Category[]) => {
       setLoading(true);
       fetchCategories()
         .then((data) => {
-          if (isActive) setCategories(data);
+          if (isActive) setCategories(sortCategoriesByOrder(data));
         })
         .catch(() => {})
         .finally(() => {

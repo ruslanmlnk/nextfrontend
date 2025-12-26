@@ -15,6 +15,7 @@ export interface PayloadCategory {
   title?: string | null;
   slug?: string | null;
   image?: PayloadMedia | string | null;
+  order?: number | null;
 }
 
 export interface PayloadBrand {

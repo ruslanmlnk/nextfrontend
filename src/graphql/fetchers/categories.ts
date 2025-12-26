@@ -6,6 +6,7 @@ import { GET_CATEGORIES } from '../queries/categories'
 import type { PayloadCategory } from '../types'
 import { getImageUrl } from '@/api'
 import { CATEGORIES } from '@/constants'
+import { sortCategoriesByOrder } from '@/utils/categories'
 
 const USE_MOCK = false
 let cachedCategories: Category[] | null = null
@@ -24,6 +25,7 @@ const normalizeCategory = (item: PayloadCategory): Category | null => {
     title: item.title ?? '',
     slug: item.slug ?? '',
     image: getImageUrl(item.image) || '',
+    order: typeof item.order === 'number' ? item.order : 0,
   }
 }
 
@@ -32,10 +34,12 @@ export const fetchCategories = async (): Promise<Category[]> => {
   if (categoriesPromise) return categoriesPromise
 
   if (USE_MOCK) {
-    cachedCategories = CATEGORIES.map((c) => ({
-      ...c,
-      image: getImageUrl(c.image) || '',
-    }))
+    cachedCategories = sortCategoriesByOrder(
+      CATEGORIES.map((c) => ({
+        ...c,
+        image: getImageUrl(c.image) || '',
+      })),
+    )
     return cachedCategories
   }
 
@@ -47,14 +51,18 @@ export const fetchCategories = async (): Promise<Category[]> => {
         .map(normalizeCategory)
         .filter((c: Category | null): c is Category => Boolean(c))
 
-      cachedCategories = normalized
-      return normalized
+      const ordered = sortCategoriesByOrder(normalized)
+      cachedCategories = ordered
+      return ordered
     } catch (error) {
       console.warn('Payload categories fetch failed', error)
-      const fallback = CATEGORIES.map((c) => ({
-        ...c,
-        image: getImageUrl(c.image) || '',
-      }))
+      const fallback = sortCategoriesByOrder(
+        CATEGORIES.map((c) => ({
+          ...c,
+          image: getImageUrl(c.image) || '',
+          order: typeof c.order === 'number' ? c.order : 0,
+        })),
+      )
       cachedCategories = fallback
       return fallback
     } finally {

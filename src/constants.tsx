@@ -8,36 +8,42 @@ export const CATEGORIES: Category[] = [
     title: 'Мʼякі меблі',
     image: 'https://i.ibb.co/Pp5tfZL/a65428f5785f31c2edb75c5da6a847f64db00fed.png',
     slug: 'soft-furniture',
+    order: 0,
   },
   {
     id: 2,
     title: 'Спальня',
     image: 'https://i.ibb.co/PzTgLXN5/b0a73fcaf0bca244f75fc86dacff35ce5ea766ec.png',
     slug: 'bedroom',
+    order: 1,
   },
   {
     id: 3,
     title: 'Кухня',
     image: 'https://i.ibb.co/srbqQRr/1155239bcb52eb213567e6ef78b15fafe9b01b4d.png',
     slug: 'kitchen',
+    order: 2,
   },
   {
     id: 4,
     title: 'Освітлення',
     image: 'https://i.ibb.co/Q7MLWqqV/edd84ac5269ae39ed5ce923f5c9df85d0e4e6537.png',
     slug: 'lighting',
+    order: 3,
   },
   {
     id: 5,
     title: 'Системи зберігання',
     image: 'https://i.ibb.co/sJ1qtbZ5/5a1fe2c3698e634fe0106d4972a652e09f0cebca.png',
     slug: 'storage',
+    order: 4,
   },
   {
     id: 6,
     title: 'Техніка',
     image: 'https://i.ibb.co/7N0sYgK5/f162aa39f68011883e86a0aebdcfe6262b522bfc.png',
     slug: 'appliances',
+    order: 5,
   },
 ];
 
@@ -307,4 +313,3 @@ export const FEATURES: Feature[] = [
     description: "Пишіть питання, ми зв'яжемося з вами",
   },
 ];
-

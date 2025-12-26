@@ -2,7 +2,7 @@ import { gql } from 'graphql-request'
 
 export const GET_CATEGORIES = gql`
   query GetCategories($limit: Int = 100) {
-    Categories(limit: $limit, sort: "title") {
+    Categories(limit: $limit) {
       docs {
         id
         title
@@ -13,6 +13,7 @@ export const GET_CATEGORIES = gql`
           height
           alt
         }
+        order
       }
     }
   }
