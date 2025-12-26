@@ -86,7 +86,7 @@ const DeliveryPage: React.FC = () => {
            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'delivery' ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
              <div className="p-6 border border-gray-100 border-t-0 bg-[#F1F1F1]">
                 <p className="text-gray-600 text-sm leading-relaxed mb-8 max-w-5xl">
-                    Ми здійснюємо доставку товарів у будь-який куточок України - чи то велике місто, чи то невелике село. Працюємо з надійними службами доставки: Нова Пошта, УкрПошта, Justin. Під час оформлення замовлення ви можете вибрати відповідне відділення або кур'єрську доставку додому. Середній термін доставки - від 1 до 3 робочих днів.
+                    Ми здійснюємо доставку товарів у будь-який куточок України - чи то велике місто, чи то невелике село. Працюємо з надійними службами доставки: Нова Пошта. Під час оформлення замовлення ви можете вибрати відповідне відділення або кур'єрську доставку додому. Середній термін доставки - від 1 до 3 робочих днів.
                 </p>
                 <div className="bg-[#F3F3F3] p-4 flex items-center gap-4 rounded-sm border border-gray-100 w-fit">
                     <Clock size={24} className="text-gray-500" />
