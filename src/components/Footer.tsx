@@ -164,7 +164,7 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="flex flex-col pt-0.5">
                   <span className="leading-tight block text-left">
-                    м.Київ с.Вішневе <br /> вул.Чорновола,1
+                    м.Київ с.Вишневе <br /> вул.Чорновола,1
                   </span>
                 </div>
               </div>

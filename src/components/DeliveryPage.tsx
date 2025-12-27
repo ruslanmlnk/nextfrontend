@@ -11,12 +11,12 @@ const PAYMENT_OPTIONS = [
     icon: CreditCard, 
     content: 'Ви можете оплатити замовлення онлайн банківською картою Visa або MasterCard без комісії відразу після оформлення замовлення на сайті.' 
   },
-  { 
-    id: 'cod', 
-    label: 'Оплата при отриманні та на розрахунковий рахунок ФОП', 
-    icon: Banknote, 
-    content: 'Оплата готівкою або карткою при отриманні товару у відділенні Нової Пошти або кур\'єру. Також можлива оплата на розрахунковий рахунок для фізичних та юридичних осіб.' 
-  },
+  // { 
+  //   id: 'cod', 
+  //   label: 'Оплата при отриманні та на розрахунковий рахунок ФОП', 
+  //   icon: Banknote, 
+  //   content: 'Оплата готівкою або карткою при отриманні товару у відділенні Нової Пошти або кур\'єру. Також можлива оплата на розрахунковий рахунок для фізичних та юридичних осіб.' 
+  // },
   { 
     id: 'compatibility', 
     label: 'Підходить для всіх популярних марок', 
@@ -110,7 +110,7 @@ const DeliveryPage: React.FC = () => {
                     >
                         <div className="flex items-center gap-4">
                             <opt.icon size={20} className={openSection === opt.id ? "text-white" : "text-gray-500"} />
-                            <span className={`font-bold text-sm uppercase ${openSection === opt.id ? "text-white" : "text-gray-800"}`}>
+                            <span className={`font-bold text-sm uppercase text-left ${openSection === opt.id ? "text-white" : "text-gray-800"}`}>
                                 {opt.label}
                             </span>
                         </div>
