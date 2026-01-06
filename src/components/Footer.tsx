@@ -176,7 +176,7 @@ const Footer: React.FC = () => {
           <p className="text-[16px] text-[#878787] leading-none">© 2025 Острів. Усі права захищені.</p>
           <div className="flex gap-2">
             <a
-              href="#"
+              href="https://www.facebook.com/share/17dg5RjTKg/"
               className="flex items-center justify-center hover:border-white transition-colors group"
             >
               <Image

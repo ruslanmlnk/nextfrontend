@@ -103,12 +103,12 @@ const ContactPage: React.FC = () => {
               >
                 +38 (050) 595-62-73
               </a>
-              {/* <a
+              <a
                 href="tel:+380505573395"
                 className="text-[15px] text-[#777] hover:text-amber-500 transition-colors font-medium"
               >
                 +38 (050) 557-33-95
-              </a> */}
+              </a>
             </div>
           </div>
 
