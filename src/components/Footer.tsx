@@ -186,7 +186,7 @@ const Footer: React.FC = () => {
               />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/byttehnika_mebel?igsh=MTV0amdrbDIwOTc1dQ=="
               className="flex items-center justify-center hover:border-white transition-colors group"
             >
               <Image
