@@ -1,6 +1,14 @@
 import CatalogPage from '@/components/CatalogPage';
 import { fetchCategoriesServer } from '@/graphql/server/categories';
 import { fetchProductsServer } from '@/graphql/server/products';
+import { Metadata } from 'next';
+
+
+export const metadata: Metadata = {
+  title: "Ostriv | Побутові товари та техніка для дому",
+  description:
+    "Інтернет-каталог Ostriv: побутові товари, техніка та корисні речі для дому. Широкий асортимент і вигідні пропозиції.",
+};
 
 interface CatalogProps {
   searchParams?: Promise<{

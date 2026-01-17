@@ -18,8 +18,9 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "Ostriv Furniture",
-  description: "Каталог меблів Ostriv на Next.js та Tailwind CSS.",
+  title: "Ostriv | Побутові товари та техніка для дому",
+  description:
+    "Інтернет-каталог Ostriv: побутові товари, техніка та корисні речі для дому. Широкий асортимент і вигідні пропозиції.",
 };
 
 export default async function RootLayout({
