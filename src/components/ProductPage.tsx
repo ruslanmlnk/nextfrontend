@@ -36,24 +36,24 @@ const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
   const isInStock = stockCount > 0;
   const { categories } = useCategories();
   const categoryTitle = categories.find((c) => c.slug === product.category)?.title || product.category;
-  const characteristics =
-    Array.isArray(product.characteristics)
-      ? product.characteristics
-          .map((item) => {
-            if (!item) return null;
-            const label =
-              typeof item.label === 'string' ? item.label.trim() : item.label != null ? String(item.label) : '';
-            const value =
-              typeof item.value === 'string' ? item.value.trim() : item.value != null ? String(item.value) : '';
-            if (!label && !value) return null;
-            return {
-              id: item.id ?? `${label}-${value}`,
-              label,
-              value,
-            };
-          })
-          .filter((item): item is { id?: string | number; label: string; value: string } => Boolean(item))
-      : [];
+  type NormalizedCharacteristic = { id: string | number; label: string; value: string };
+  const characteristics: NormalizedCharacteristic[] = Array.isArray(product.characteristics)
+    ? product.characteristics
+        .map((item): NormalizedCharacteristic | null => {
+          if (!item) return null;
+          const label =
+            typeof item.label === 'string' ? item.label.trim() : item.label != null ? String(item.label) : '';
+          const value =
+            typeof item.value === 'string' ? item.value.trim() : item.value != null ? String(item.value) : '';
+          if (!label && !value) return null;
+          return {
+            id: item.id ?? `${label}-${value}`,
+            label,
+            value,
+          };
+        })
+        .filter((item): item is NormalizedCharacteristic => Boolean(item))
+    : [];
   const hasCharacteristics = characteristics.length > 0;
   const hasDescription = Boolean(product.description && product.description.trim());
   const tabButtonClass = (tab: 'description' | 'characteristics') =>
