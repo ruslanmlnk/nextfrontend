@@ -3,7 +3,7 @@
 import { Product } from '@/types'
 import { getImageUrl } from '@/api'
 import { graphqlClient } from '../client'
-import { PayloadBrand, PayloadCategory, PayloadColor, PayloadProduct } from '../types'
+import { PayloadBrand, PayloadCategory, PayloadColor, PayloadProduct, PayloadProductCharacteristic } from '../types'
 import { CATALOG_PRODUCTS, HIT_PRODUCTS, NEW_PRODUCTS } from '@/constants'
 import { GET_PRODUCTS } from '../queries/products'
 
@@ -55,6 +55,23 @@ const normalizeProduct = (item: PayloadProduct): Product | null => {
         })
         .filter((c): c is NonNullable<typeof c> => Boolean(c))
     : []
+  const characteristics = Array.isArray(item.characteristics)
+    ? item.characteristics
+        .map((row) => {
+          if (!row) return null
+          const characteristic = row as PayloadProductCharacteristic
+          const label = characteristic.label ?? ''
+          const value = characteristic.value ?? ''
+          if (!label && !value) return null
+
+          return {
+            id: characteristic.id ?? `${label}-${value}`,
+            label,
+            value,
+          }
+        })
+        .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    : []
   const categoryField = item.category
   const categorySlug =
     typeof categoryField === 'string'
@@ -82,6 +99,7 @@ const normalizeProduct = (item: PayloadProduct): Product | null => {
     oldPrice: item.oldPrice ?? undefined,
     rating: item.rating ?? 0,
     description: item.description ?? '',
+    characteristics,
     isHit: Boolean(item.isHit),
     isNew: Boolean(item.isNew),
     discount,

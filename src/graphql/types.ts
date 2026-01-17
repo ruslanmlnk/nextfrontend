@@ -30,6 +30,11 @@ export interface PayloadColor {
   slug?: string | null;
   hex?: string | null;
 }
+export interface PayloadProductCharacteristic {
+  id?: PayloadID;
+  label?: string | null;
+  value?: string | null;
+}
 export interface seoFields {
   metaTitle?: string | null;
   metaDescription?: string | null;
@@ -53,6 +58,7 @@ export interface PayloadProduct {
   gallery?: (PayloadMedia | PayloadID)[] | null;
   category?: PayloadCategory | PayloadID | null;
   colors?: (PayloadColor | PayloadID)[] | null;
+  characteristics?: PayloadProductCharacteristic[] | null;
 }
 
 export interface PayloadListResponse<T> {

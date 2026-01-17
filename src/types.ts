@@ -27,6 +27,7 @@ export interface Product {
   isHit?: boolean;
   discount?: number;
   description?: string;
+  characteristics?: ProductCharacteristic[];
   colors?: Color[];
 }
 
@@ -49,6 +50,12 @@ export interface Color {
   title: string;
   slug: string;
   hex?: string;
+}
+
+export interface ProductCharacteristic {
+  id?: string | number;
+  label: string;
+  value: string;
 }
 
 export interface Feature {

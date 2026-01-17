@@ -25,6 +25,11 @@ export const GET_PRODUCTS = gql`
         isHit
         isNew
         discount
+        characteristics {
+          id
+          label
+          value
+        }
         image {
           url
           width

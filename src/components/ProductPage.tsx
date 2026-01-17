@@ -25,6 +25,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
     const first = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
     return first ? (first.slug || first.title || undefined) : undefined;
   });
+  const [activeTab, setActiveTab] = useState<'description' | 'characteristics'>('description');
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -35,12 +36,39 @@ const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
   const isInStock = stockCount > 0;
   const { categories } = useCategories();
   const categoryTitle = categories.find((c) => c.slug === product.category)?.title || product.category;
+  const characteristics =
+    Array.isArray(product.characteristics)
+      ? product.characteristics
+          .map((item) => {
+            if (!item) return null;
+            const label =
+              typeof item.label === 'string' ? item.label.trim() : item.label != null ? String(item.label) : '';
+            const value =
+              typeof item.value === 'string' ? item.value.trim() : item.value != null ? String(item.value) : '';
+            if (!label && !value) return null;
+            return {
+              id: item.id ?? `${label}-${value}`,
+              label,
+              value,
+            };
+          })
+          .filter((item): item is { id?: string | number; label: string; value: string } => Boolean(item))
+      : [];
+  const hasCharacteristics = characteristics.length > 0;
+  const hasDescription = Boolean(product.description && product.description.trim());
+  const tabButtonClass = (tab: 'description' | 'characteristics') =>
+    `text-[13px] font-bold uppercase pb-3 -mb-[1px] border-b-2 transition-colors ${
+      activeTab === tab
+        ? 'text-amber-500 border-amber-500'
+        : 'text-[#8C8C8C] border-transparent hover:text-amber-500 hover:border-amber-200'
+    }`;
 
   useEffect(() => {
     setActiveImageIndex(0);
     setQuantity(1);
     const first = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors[0] : null;
     setSelectedColorSlug(first ? (first.slug || first.title || undefined) : undefined);
+    setActiveTab('description');
   }, [product.id]);
 
   useEffect(() => {
@@ -324,21 +352,60 @@ const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
               </div>
             </div>
 
-            {/* Description Tab */}
+            {/* Description / Characteristics Tabs */}
             <div className="mt-16">
               <div className="flex gap-8 border-b border-gray-200 mb-8">
-                <button className="text-amber-500 font-bold uppercase text-[13px] border-b-2 border-amber-500 pb-3 -mb-[1px]">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('description')}
+                  className={tabButtonClass('description')}
+                >
                   Опис
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('characteristics')}
+                  className={tabButtonClass('characteristics')}
+                >
+                  Характеристики
                 </button>
               </div>
 
-              {product.description && (
+              {activeTab === 'description' ? (
+                hasDescription ? (
+                  <>
+                    <h3 className="font-bold text-[#282828] text-[15px] mb-4">Опис товару</h3>
+                    <div className="text-[#777] text-[14px] leading-relaxed space-y-6 mb-10">
+                      {product.description
+                        ?.split(/\n+/)
+                        .filter((paragraph) => paragraph.trim().length > 0)
+                        .map((paragraph, index) => (
+                          <p key={`${paragraph}-${index}`}>{paragraph.trim()}</p>
+                        ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-[#777] text-[14px] leading-relaxed">Опис буде додано найближчим часом.</p>
+                )
+              ) : hasCharacteristics ? (
                 <>
-                  <h3 className="font-bold text-[#282828] text-[15px] mb-4">Опис товару</h3>
-                  <div className="text-[#777] text-[14px] leading-relaxed space-y-6 mb-10">
-                    <p>{product.description}</p>
+                  <h3 className="font-bold text-[#282828] text-[15px] mb-4">Технічні характеристики</h3>
+                  <div className="divide-y divide-gray-100 border border-gray-100 rounded-sm">
+                    {characteristics.map((item, index) => (
+                      <div
+                        key={item.id ?? `${item.label}-${index}`}
+                        className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3 px-4 py-3"
+                      >
+                        <div className="text-[#282828] font-semibold text-[14px] uppercase tracking-wide">
+                          {item.label}
+                        </div>
+                        <div className="text-[#777] text-[14px] leading-relaxed">{item.value}</div>
+                      </div>
+                    ))}
                   </div>
                 </>
+              ) : (
+                <p className="text-[#777] text-[14px] leading-relaxed">Характеристики уточнюються.</p>
               )}
             </div>
           </div>
