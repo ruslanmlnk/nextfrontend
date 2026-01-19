@@ -45,6 +45,7 @@ export interface PayloadProduct {
   slug?: string | null;
   name?: string | null;
   model?: string | null;
+  article?: string | null;
   brand?: PayloadBrand | PayloadID | null;
   price?: number | null;
   stock?: number | null;

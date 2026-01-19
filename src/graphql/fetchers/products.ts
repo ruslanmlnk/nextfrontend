@@ -92,6 +92,7 @@ const normalizeProduct = (item: PayloadProduct): Product | null => {
     slug: item.slug ?? '',
     name: item.name ?? '',
     model: item.model ?? undefined,
+    article: item.article ?? undefined,
     brand: brandTitle,
     category: categorySlug,
     price: item.price ?? 0,

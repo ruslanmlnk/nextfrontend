@@ -15,6 +15,7 @@ export interface Product {
   slug?: string;
   name: string;
   model?: string;
+  article?: string;
   brand?: string;
   category: string; // Or Category object if populated
   price: number;

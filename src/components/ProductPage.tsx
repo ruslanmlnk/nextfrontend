@@ -255,6 +255,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ product, products }) => {
                     </span>
                   </div>
                   <div className="flex items-center">
+                    <span className="text-[#8C8C8C] w-32">Артикул:</span>
+                    <span className="text-[#282828]">
+                      {product.article || '-'}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
                     <span className="text-[#8C8C8C] w-32">Доступність:</span>
                     <span className={`flex items-center gap-2 ${isInStock ? 'text-[#282828]' : 'text-gray-400'}`}>
                       {isInStock ? (

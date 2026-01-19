@@ -96,6 +96,7 @@ const normalizeProduct = (
       metaDescription: item.meta?.metaDescription ?? null,
     },
     model: item.model ?? undefined,
+    article: item.article ?? undefined,
     brand: brandTitle,
     category: categorySlug,
     price: item.price ?? 0,
